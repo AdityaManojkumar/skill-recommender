@@ -4,8 +4,10 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
-  },
+  "start": "node app.js",
+  "test": "echo \"No tests specified\" && exit 0"
+},
+
   "author": "",
   "license": "ISC",
   "dependencies": {
