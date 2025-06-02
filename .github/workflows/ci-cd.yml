@@ -1,52 +1,38 @@
 name: CI/CD Pipeline
 
 on:
-push:
-  branches: [ master ]
-pull_request:
-  branches: [ master, main ]
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
 
 jobs:
   build-test-deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22'  # adjust if needed
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run tests (optional)
-      run: npm test || echo "No tests found"
+      - name: Run tests (optional)
+        run: npm test  # update if you have tests, otherwise remove or comment
 
-    - name: Build Docker image
-      run: docker build -t skill-recommender-app .
+      - name: Build (optional)
+        run: npm run build  # update or remove if not required
 
-    - name: Log in to DockerHub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Push Docker image
-      run: |
-        docker tag skill-recommender-app ${{ secrets.DOCKERHUB_USERNAME }}/skill-recommender-app:latest
-        docker push ${{ secrets.DOCKERHUB_USERNAME }}/skill-recommender-app:latest
-
-    - name: Deploy to Cloud Server (example: SSH)
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: ${{ secrets.SERVER_IP }}
-        username: ${{ secrets.SERVER_USER }}
-        key: ${{ secrets.SERVER_SSH_KEY }}
-        script: |
-          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/skill-recommender-app:latest
-          docker stop skill-recommender || true
-          docker rm skill-recommender || true
-          docker run -d -p 3000:3000 --name skill-recommender ${{ secrets.DOCKERHUB_USERNAME }}/skill-recommender-app:latest
+      - name: Deploy (placeholder)
+        run: |
+          echo "Deployment step goes here. Example: docker build and push."
+          # Example Docker build:
+          # docker build -t your-image-name .
+          # echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          # docker tag your-image-name your-dockerhub-username/your-image-name:latest
+          # docker push your-dockerhub-username/your-image-name:latest
