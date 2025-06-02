@@ -76,3 +76,4 @@ router.post('/register', async (req, res) => {
 });
 
 module.exports = router;
+// Temporary comment to trigger SonarCloud scan
