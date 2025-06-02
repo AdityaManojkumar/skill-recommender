@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Skill Selector</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <h1 class="mb-4">Select Your Skills</h1>
+        <form action="/save-skills" method="POST">
+            <div class="mb-3">
+                <% const allSkills = [
+                    "Mathematics", "Physics", "Chemistry", "Data Structures", "Algorithms",
+                    "Operating Systems", "Database Systems", "Computer Networks", "Software Engineering",
+                    "Machine Learning", "Artificial Intelligence", "Web Development",
+                    "Mobile App Development", "Cloud Computing", "Cyber Security", "Blockchain",
+                    "Microprocessors", "Embedded Systems", "Digital Electronics", "Control Systems"
+                ]; %>
+                <% allSkills.forEach(skill => { %>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="skills" value="<%= skill %>">
+                        <label class="form-check-label"><%= skill %></label>
+                    </div>
+                <% }); %>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Selected Skills</button>
+        </form>
+
+        <hr>
+
+        <h2 class="mt-4">Your Saved Skills:</h2>
+        <% if (skills && skills.length > 0) { %>
+            <ul class="list-group">
+                <% skills.forEach(skill => { %>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <%= skill %>
+                        <form action="/delete-skill" method="POST" style="display:inline;">
+                            <input type="hidden" name="skill" value="<%= skill %>">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </li>
+                <% }); %>
+            </ul>
+        <% } else { %>
+            <p class="text-muted">No skills saved yet.</p>
+        <% } %>
+    </div>
+</body>
+</html>

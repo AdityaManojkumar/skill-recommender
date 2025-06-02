@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Main Page</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-top: 30px; }
+        .btn { display: inline-block; margin: 5px; padding: 10px 15px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background-color: #45a049; }
+        .selected { background-color: #2196F3; }
+    </style>
+    <script>
+        function toggleSelection(button) {
+            button.classList.toggle('selected');
+        }
+    </script>
+</head>
+<body>
+    <h1>Welcome, <%= user.username %></h1>
+
+    <form action="/save-skills" method="POST">
+        <label>Name:</label>
+        <input type="text" name="name" required><br>
+
+        <label>DOB:</label>
+        <input type="date" name="dob" required><br>
+
+        <label>Semester:</label>
+        <input type="text" name="semester" required><br>
+
+        <h2>Select Subjects:</h2>
+        <% ["Mathematics", "Physics", "Chemistry", "Data Structures", "Algorithms", "Operating Systems", "Database Systems", "Computer Networks", "Software Engineering", "Machine Learning", "Artificial Intelligence", "Web Development", "Mobile App Development", "Cloud Computing", "Cyber Security", "Blockchain", "Microprocessors", "Embedded Systems", "Digital Electronics", "Control Systems"].forEach(subject => { %>
+            <button type="button" class="btn" onclick="toggleSelection(this)"><%= subject %></button>
+        <% }); %>
+        <input type="hidden" name="subjects" id="selectedSubjects">
+
+        <h2>Select Skills:</h2>
+        <% ["Python", "Machine Learning", "React", "Data Structures", "DBMS", "Blockchain", "Cyber Security", "Java", "HTML", "CSS", "JavaScript", "Algorithms", "Operating Systems", "Computer Networks", "Software Engineering", "Artificial Intelligence", "Web Development", "Mobile App Development", "Cloud Computing", "Microprocessors", "Embedded Systems", "Digital Electronics", "Control Systems"].forEach(skill => { %>
+            <button type="button" class="btn" onclick="toggleSelection(this)"><%= skill %></button>
+        <% }); %>
+        <input type="hidden" name="skills" id="selectedSkills">
+
+        <br><br>
+        <button type="submit" class="btn">Save</button>
+    </form>
+
+    <h2>Saved Skills:</h2>
+    <ul>
+        <% skills.forEach(skill => { %>
+            <li><%= skill %> <a href="/delete-skill/<%= skill %>">Delete</a></li>
+        <% }); %>
+    </ul>
+
+    <form action="/recommend" method="POST">
+        <input type="hidden" name="skills" value="<%= skills.join(',') %>">
+        <button type="submit" class="btn">Get Recommendations</button>
+    </form>
+
+    <script>
+        // Capture selected subjects and skills before submitting
+        const form = document.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            const selectedSubjects = [];
+            const selectedSkills = [];
+            document.querySelectorAll('.btn.selected').forEach(btn => {
+                if (<%- JSON.stringify(["Mathematics","Physics","Chemistry","Data Structures","Algorithms","Operating Systems","Database Systems","Computer Networks","Software Engineering","Machine Learning","Artificial Intelligence","Web Development","Mobile App Development","Cloud Computing","Cyber Security","Blockchain","Microprocessors","Embedded Systems","Digital Electronics","Control Systems"]) %>.includes(btn.innerText)) {
+                    selectedSubjects.push(btn.innerText);
+                } else {
+                    selectedSkills.push(btn.innerText);
+                }
+            });
+            document.getElementById('selectedSubjects').value = selectedSubjects.join(',');
+            document.getElementById('selectedSkills').value = selectedSkills.join(',');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Home</title>
+</head>
+<body>
+    <h1>Welcome!</h1>
+    <form action="/save-skill" method="POST">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+        <label>Date of Birth:</label><br>
+        <input type="date" name="dob" required><br>
+        <label>Semester:</label><br>
+        <input type="text" name="semester" required><br>
+        <label>Subjects Studied (comma separated):</label><br>
+        <input type="text" name="subjects" required><br>
+        <label>Skills Acquired (comma separated):</label><br>
+        <input type="text" name="skills" required><br><br>
+        <button type="submit">Save Skills</button>
+    </form>
+
+    <h2>Your Skills:</h2>
+    <ul>
+        <% skills.forEach(skill => { %>
+            <li>
+                <strong><%= skill.skills.join(', ') %></strong>
+                <form action="/delete-skill/<%= skill._id %>" method="POST" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
+            </li>
+        <% }) %>
+    </ul>
+
+    <h2>Get Recommendations:</h2>
+    <form action="/get-recommendations" method="POST">
+        <label>Skills (comma separated):</label><br>
+        <input type="text" name="skills" required><br><br>
+        <button type="submit">Get Recommendations</button>
+    </form>
+</body>
+</html>

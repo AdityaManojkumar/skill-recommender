@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Details</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .checkbox-list { columns: 2; }
+    .skill-tag {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 5px 10px;
+      margin: 5px;
+      border-radius: 15px;
+      cursor: default;
+    }
+    .skill-tag form {
+      display: inline;
+    }
+    .skill-tag button {
+      border: none;
+      background: transparent;
+      color: white;
+      margin-left: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body class="container p-5">
+  <h1 class="mb-4">Enter Your Details</h1>
+  <form action="/details" method="POST">
+    <div class="mb-3">
+      <label>Name:</label>
+      <input type="text" name="name" value="<%= userData.name || '' %>" required class="form-control" />
+    </div>
+    <div class="mb-3">
+      <label>Date of Birth:</label>
+      <input type="date" name="dob" value="<%= userData.dob || '' %>" required class="form-control" />
+    </div>
+    <div class="mb-3">
+      <label>Semester (1-8):</label>
+      <input type="number" name="semester" min="1" max="8" value="<%= userData.semester || '' %>" required class="form-control" />
+    </div>
+    <div class="mb-3">
+      <label>College:</label>
+      <input type="text" name="college" value="<%= userData.college || '' %>" required class="form-control" />
+    </div>
+
+    <div class="mb-3">
+      <label>Subjects Studied:</label>
+      <div class="checkbox-list">
+        <% subjectsList.forEach(subj => { %>
+          <div>
+            <input type="checkbox" name="subjects" value="<%= subj %>" 
+              <%= (userData.subjects || []).includes(subj) ? 'checked' : '' %> />
+            <%= subj %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label>Skills Acquired:</label>
+      <div class="checkbox-list">
+        <% skillsList.forEach(skill => { %>
+          <div>
+            <input type="checkbox" name="skills" value="<%= skill %>" 
+              <%= (userData.skills || []).includes(skill) ? 'checked' : '' %> />
+            <%= skill %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save & Next</button>
+  </form>
+
+  <hr />
+  <% if (userData.skills && userData.skills.length > 0) { %>
+    <h3>Your Saved Skills:</h3>
+    <div>
+      <% userData.skills.forEach(skill => { %>
+        <span class="skill-tag">
+          <%= skill %>
+          <form action="/delete-skill" method="POST" style="display:inline;">
+            <input type="hidden" name="skill" value="<%= skill %>" />
+            <button type="submit" title="Delete skill">&times;</button>
+          </form>
+        </span>
+      <% }) %>
+    </div>
+  <% } %>
+</body>
+</html>
