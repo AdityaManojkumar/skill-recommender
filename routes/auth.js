@@ -1,8 +1,9 @@
 const express = require('express');
+const mysql = require('mysql');
+const bcrypt = require('bcrypt');
 const router = express.Router();
-const mysql = require('mysql2');
 
-// Create MySQL connection pool (adjust with your own config)
+// Create MySQL connection pool (use env vars in production)
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'your_mysql_user',
@@ -22,47 +23,50 @@ const query = (sql, params) =>
 // Login route
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-
-  // Validate input (basic)
   if (!username || !password) {
     return res.status(400).json({ error: 'Username and password required' });
   }
-
   try {
-    // Use parameterized query to prevent SQL Injection
-    const sql = 'SELECT * FROM users WHERE username = ? AND password = ?';
-    const results = await query(sql, [username, password]);
-
+    // Get user by username only
+    const results = await query('SELECT * FROM users WHERE username = ?', [username]);
     if (results.length === 0) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
+    const user = results[0];
 
-    // User found — create session or JWT here (simplified)
-    res.json({ message: 'Login successful', user: results[0] });
+    // Compare hashed password
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    // Login successful (create session or JWT here)
+    res.json({ message: 'Login successful', user: { id: user.id, username: user.username, email: user.email } });
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Registration route example
+// Registration route
 router.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
-
   if (!username || !password || !email) {
     return res.status(400).json({ error: 'Username, password, and email required' });
   }
-
   try {
-    // Check if username already exists
+    // Check if username exists
     const existingUser = await query('SELECT * FROM users WHERE username = ?', [username]);
     if (existingUser.length > 0) {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
-    // Insert new user securely
+    // Hash password before storing
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert new user
     const insertSql = 'INSERT INTO users (username, password, email) VALUES (?, ?, ?)';
-    await query(insertSql, [username, password, email]);
+    await query(insertSql, [username, hashedPassword, email]);
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
