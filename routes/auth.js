@@ -1,9 +1,9 @@
 const express = require('express');
-const mysql = require('mysql');
-const bcrypt = require('bcrypt');
 const router = express.Router();
+const mysql = require('mysql2');
+const bcrypt = require('bcrypt');
 
-// Create MySQL connection pool (use env vars in production)
+// Create MySQL connection pool (update with your credentials)
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'your_mysql_user',
@@ -27,8 +27,9 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Username and password required' });
   }
   try {
-    // Get user by username only
-    const results = await query('SELECT * FROM users WHERE username = ?', [username]);
+    // Fetch user by username
+    const sql = 'SELECT * FROM users WHERE username = ?';
+    const results = await query(sql, [username]);
     if (results.length === 0) {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
@@ -40,7 +41,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Login successful (create session or JWT here)
     res.json({ message: 'Login successful', user: { id: user.id, username: user.username, email: user.email } });
   } catch (error) {
     console.error('Database error:', error);
@@ -61,10 +61,10 @@ router.post('/register', async (req, res) => {
       return res.status(409).json({ error: 'Username already exists' });
     }
 
-    // Hash password before storing
+    // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert new user
+    // Insert new user securely
     const insertSql = 'INSERT INTO users (username, password, email) VALUES (?, ?, ?)';
     await query(insertSql, [username, hashedPassword, email]);
 
@@ -76,4 +76,3 @@ router.post('/register', async (req, res) => {
 });
 
 module.exports = router;
-// Temporary comment to trigger SonarCloud scan
