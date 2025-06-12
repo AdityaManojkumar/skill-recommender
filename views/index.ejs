@@ -45,5 +45,24 @@
             <p class="text-muted">No skills saved yet.</p>
         <% } %>
     </div>
+    <h2>Chat with our Project Helper 🤖</h2>
+<div id="chatbox" style="border:1px solid #ccc; padding:10px; height:200px; overflow:auto;"></div>
+<input type="text" id="chat-input" placeholder="Ask me something..." style="width:100%; padding:10px;"/>
+
+<h3>Get LeetCode Questions Based on Skill</h3>
+<button onclick="fetchLeetcode('javascript')">JavaScript</button>
+<button onclick="fetchLeetcode('python')">Python</button>
+<button onclick="fetchLeetcode('java')">Java</button>
+<div id="leetcode" style="margin-top: 10px;"></div>
+<script src="/chatbot.js"></script>
+<script>
+  async function fetchLeetcode(skill) {
+    const res = await fetch(`/leetcode/${skill}`);
+    const questions = await res.json();
+    document.getElementById("leetcode").innerHTML =
+      "<ul>" + questions.map(q => `<li>${q}</li>`).join("") + "</ul>";
+  }
+</script>
+
 </body>
 </html>

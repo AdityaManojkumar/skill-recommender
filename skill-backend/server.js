@@ -26,6 +26,28 @@ app.get('/', (req, res) => {
   res.send('SkillMatch Backend is running!');
 });
 
+app.get('/leetcode/:skill', async (req, res) => {
+  const skill = req.params.skill.toLowerCase();
+  const dummyQuestions = {
+    javascript: ["Two Sum", "Valid Parentheses", "Merge Intervals"],
+    python: ["Add Two Numbers", "Longest Substring", "Word Ladder"],
+    java: ["LRU Cache", "Median of Two Sorted Arrays", "Clone Graph"]
+  };
+  res.json(dummyQuestions[skill] || ["No questions found."]);
+});
+
+app.get('/leetcode/:skill', async (req, res) => {
+  const skill = req.params.skill.toLowerCase();
+  const dummyQuestions = {
+    javascript: ["Two Sum", "Valid Parentheses", "Merge Intervals"],
+    python: ["Add Two Numbers", "Longest Substring", "Word Ladder"],
+    java: ["LRU Cache", "Median of Two Sorted Arrays", "Clone Graph"]
+  };
+  res.json(dummyQuestions[skill] || ["No questions found."]);
+});
+
+
+
 // MongoDB connection (use your own URI)
 mongoose.connect('mongodb://localhost:27017/skillmatch', {
   useNewUrlParser: true,

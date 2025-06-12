@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const mysql = require('mysql2');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+const mysql = require('mysql2/promise'); // use promise-based client
 
-// Create MySQL connection pool (update with your credentials)
+// Create MySQL connection pool (adjust with your own config)
 const pool = mysql.createPool({
   host: 'localhost',
   user: 'your_mysql_user',
@@ -12,63 +12,87 @@ const pool = mysql.createPool({
 });
 
 // Helper function to query with promises
-const query = (sql, params) =>
-  new Promise((resolve, reject) => {
-    pool.query(sql, params, (error, results) => {
-      if (error) reject(error);
-      else resolve(results);
-    });
-  });
+async function query(sql, params) {
+  const [results] = await pool.execute(sql, params);
+  return results;
+}
 
-// Login route
-router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
+// Render login page
+router.get('/login', (req, res) => {
+  res.render('login');
+});
+
+// Render register page
+router.get('/register', (req, res) => {
+  res.render('register');
+});
+
+// Registration route
+router.post('/register', async (req, res) => {
+  const { username, email, collegeID, password } = req.body;
+
+  if (!username || !email || !password || !collegeID) {
+    return res.status(400).json({ error: 'All fields are required' });
   }
+
   try {
-    // Fetch user by username
-    const sql = 'SELECT * FROM users WHERE username = ?';
-    const results = await query(sql, [username]);
-    if (results.length === 0) {
-      return res.status(401).json({ error: 'Invalid username or password' });
-    }
-    const user = results[0];
+    // Check if username or email already exists
+    const existingUsers = await query(
+      'SELECT * FROM users WHERE username = ? OR email = ?',
+      [username, email]
+    );
 
-    // Compare hashed password
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+    if (existingUsers.length > 0) {
+      return res.status(409).json({ error: 'Username or email already exists' });
     }
 
-    res.json({ message: 'Login successful', user: { id: user.id, username: user.username, email: user.email } });
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Insert new user securely
+    await query(
+      'INSERT INTO users (username, email, collegeID, password) VALUES (?, ?, ?, ?)',
+      [username, email, collegeID, hashedPassword]
+    );
+
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Registration route
-router.post('/register', async (req, res) => {
-  const { username, password, email } = req.body;
-  if (!username || !password || !email) {
-    return res.status(400).json({ error: 'Username, password, and email required' });
+// Login route
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
   }
+
   try {
-    // Check if username exists
-    const existingUser = await query('SELECT * FROM users WHERE username = ?', [username]);
-    if (existingUser.length > 0) {
-      return res.status(409).json({ error: 'Username already exists' });
+    // Fetch user by username
+    const users = await query('SELECT * FROM users WHERE username = ?', [username]);
+
+    if (users.length === 0) {
+      return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Hash the password before storing
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = users[0];
 
-    // Insert new user securely
-    const insertSql = 'INSERT INTO users (username, password, email) VALUES (?, ?, ?)';
-    await query(insertSql, [username, hashedPassword, email]);
+    // Compare hashed passwords
+    const passwordMatch = await bcrypt.compare(password, user.password);
 
-    res.status(201).json({ message: 'User registered successfully' });
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    // Login success: you can create session or JWT here
+    // For example:
+    // req.session.userId = user.id;
+    // or return JWT token
+
+    res.json({ message: 'Login successful', user: { id: user.id, username: user.username, email: user.email } });
   } catch (error) {
     console.error('Database error:', error);
     res.status(500).json({ error: 'Internal server error' });
